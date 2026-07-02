@@ -12,10 +12,13 @@ public class Main {
 
         ArrayList<Customer> customerList = new ArrayList<Customer>();
         ArrayList<Account> accountList = new ArrayList<Account>();
-        Scanner sc = new Scanner(System.in);
+        ArrayList<Transaction> transactionList = new ArrayList<Transaction>();
 
-        int ID = 0;
+        int tID = 1;
+        int ID = 1;
         int choice;
+
+        Scanner sc = new Scanner(System.in);
 
         while (true){
             IO.println("Banka sistemine hosgeldiniz." +
@@ -40,7 +43,7 @@ public class Main {
                     if (loggedInCustomer == null) break;
 
                     //giris sonrasi islemler
-                    accountMenu(sc, loggedInCustomer, accountList);
+                    accountMenu(sc, loggedInCustomer, accountList, transactionList, tID);
 
                     break;
                 case 3:
@@ -114,7 +117,7 @@ public class Main {
         return requestedAccount;
     }
 
-    static void accountMenu(Scanner sc, Customer loggedInCustomer, List<Account> accountList)
+    static void accountMenu(Scanner sc, Customer loggedInCustomer, List<Account> accountList, List<Transaction> transactionList, int tID)
     {
         Account loggedInAccount = findAffiliatedAccount(loggedInCustomer, accountList);
         while (true)
@@ -139,6 +142,15 @@ public class Main {
 
                     loggedInAccount.addDeposit(depositAmount);
 
+                    Transaction x = new Transaction(
+                            tID++,
+                            Transaction.TransactionType.DEPOSIT,
+                            depositAmount,
+                            loggedInAccount.accID,
+                            null
+                    );
+                    transactionList.add(x);
+
                     IO.println("Guncel bakiye: " + loggedInAccount.balance);
                     break;
                 case 2:
@@ -146,6 +158,15 @@ public class Main {
                             "\n mevcut bakiye: " + loggedInAccount.balance);
 
                     BigDecimal withdrawalAmount = new BigDecimal(sc.nextLine());
+
+                    Transaction y = new Transaction(
+                            tID++,
+                            Transaction.TransactionType.WITHDRAWAL,
+                            withdrawalAmount,
+                            loggedInAccount.accID,
+                            null
+                            );
+                    transactionList.add(y);
 
                     loggedInAccount.withdrawMoney(withdrawalAmount);
 
@@ -166,7 +187,19 @@ public class Main {
                             if (account1.accID == targetAccount)
                             {
                                 loggedInAccount.balance = loggedInAccount.balance.subtract(amount);
+
+                                Transaction z = new Transaction(
+                                        tID++,
+                                        Transaction.TransactionType.SENT,
+                                        amount,
+                                        loggedInAccount.accID,
+                                        targetAccount
+                                );
+                                transactionList.add(z);
+
                                 account1.balance = account1.balance.add(amount);
+
+
                                 IO.println(amount + " lira basari ile gonderildi..");
                             }
                         }
@@ -175,11 +208,31 @@ public class Main {
                     break;
                 case 4:
 
+                    writeLog(transactionList, loggedInAccount);
 
                     break;
                 case 5:
                     IO.println("Hesaptan cikiliyor..");
                     return;
+            }
+        }
+    }
+
+    static void writeLog(List<Transaction> transactionList, Account loggedInAccount) {
+
+        int num = 1;
+        for (Transaction tr1 : transactionList)
+        {
+            if (tr1.sourceID == loggedInAccount.accID ||
+                    (tr1.targetID != null && tr1.targetID == loggedInAccount.accID) // null fix
+            )
+            {
+                IO.println("numara: " + num++ +
+                        "\n logID: " + tr1.transactionID +
+                        "\n islem turu: " + tr1.type +
+                        "\n miktar: " + tr1.amount +
+                        "\n gonderen ID: " + tr1.sourceID +
+                        "\n teslim alan ID: " + tr1.targetID + "\t");
             }
         }
     }
