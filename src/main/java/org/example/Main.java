@@ -134,20 +134,44 @@ public class Main {
                 case 1:
                     IO.println("yatirmak istediginiz miktari giriniz.." +
                             "\n mevcut bakiye: " + loggedInAccount.balance);
+
                     BigDecimal depositAmount = new BigDecimal(sc.nextLine());
-                    loggedInAccount.balance = loggedInAccount.balance.add(depositAmount);
+
+                    loggedInAccount.addDeposit(depositAmount);
+
                     IO.println("Guncel bakiye: " + loggedInAccount.balance);
                     break;
                 case 2:
                     IO.println("cekmek istediginiz miktari giriniz.." +
                             "\n mevcut bakiye: " + loggedInAccount.balance);
+
                     BigDecimal withdrawalAmount = new BigDecimal(sc.nextLine());
-                    loggedInAccount.balance = loggedInAccount.balance.subtract(withdrawalAmount);
+
+                    loggedInAccount.withdrawMoney(withdrawalAmount);
+
                     IO.println("Guncel bakiye: " + loggedInAccount.balance);
                     break;
                 case 3:
+                    IO.println("Para gondermek istediginiz hesabın ID sini girin..");
+                    int targetAccount = sc.nextInt();
+                    sc.nextLine();
 
+                    IO.println("Gondermek istediğiniz para miktarını girin..");
+                    BigDecimal amount = new BigDecimal(sc.nextLine());
 
+                    if (loggedInAccount.balance.compareTo(amount) >= 0)
+                    {
+                        for (Account account1 : accountList)
+                        {
+                            if (account1.accID == targetAccount)
+                            {
+                                loggedInAccount.balance = loggedInAccount.balance.subtract(amount);
+                                account1.balance = account1.balance.add(amount);
+                                IO.println(amount + " lira basari ile gonderildi..");
+                            }
+                        }
+
+                    }else IO.println("yeterli para mevcut degildir..");
                     break;
                 case 4:
 

@@ -13,5 +13,13 @@ public class Account {
         this.balance = balance;
     }
 
+    void addDeposit(BigDecimal amount)
+    {
+        this.balance = this.balance.add(amount);
+    }
 
+    void withdrawMoney(BigDecimal amount)
+    {
+        this.balance = this.balance.add(amount);
+    }
 }
