@@ -1,5 +1,6 @@
 package org.example;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -10,6 +11,7 @@ public class Main {
     public static void main() {
 
         ArrayList<Customer> customerList = new ArrayList<Customer>();
+        ArrayList<Account> accountList = new ArrayList<Account>();
         Scanner sc = new Scanner(System.in);
 
         int ID = 0;
@@ -25,8 +27,12 @@ public class Main {
                     sc.nextLine();
             switch (choice){
                 case 1:
-                    Customer customer = registry(sc, ID++);
-                    customerList.add(customer);
+                    Customer registeredCustomer = registry(sc, ID++);
+                    customerList.add(registeredCustomer);
+
+                    Account registeredAccount = new Account(registeredCustomer.accID, new BigDecimal("1000"));
+                    accountList.add(registeredAccount);
+
                     IO.println("Hesap olusturuldu");
                     break;
                 case 2:
@@ -34,7 +40,7 @@ public class Main {
                     if (loggedInCustomer == null) break;
 
                     //giris sonrasi islemler
-                    accountMenu(sc, loggedInCustomer);
+                    accountMenu(sc, loggedInCustomer, accountList);
 
                     break;
                 case 3:
@@ -95,8 +101,22 @@ public class Main {
 
     }
 
-    static void accountMenu(Scanner sc, Customer loggedInCustomer)
+    static Account findAffiliatedAccount(Customer loggedInCustomer, List<Account> accountList)
     {
+        Account requestedAccount = null;
+        for (Account account1 : accountList)
+        {
+            if(account1.accID == loggedInCustomer.accID)
+            {
+                requestedAccount = account1;
+            }
+        }
+        return requestedAccount;
+    }
+
+    static void accountMenu(Scanner sc, Customer loggedInCustomer, List<Account> accountList)
+    {
+        Account loggedInAccount = findAffiliatedAccount(loggedInCustomer, accountList);
         while (true)
         {
             IO.println("Hosgeldiniz " + loggedInCustomer.name + " " + loggedInCustomer.surname + " !" +
@@ -112,12 +132,18 @@ public class Main {
 
             switch (choice){
                 case 1:
-
-
+                    IO.println("yatirmak istediginiz miktari giriniz.." +
+                            "\n mevcut bakiye: " + loggedInAccount.balance);
+                    BigDecimal depositAmount = new BigDecimal(sc.nextLine());
+                    loggedInAccount.balance = loggedInAccount.balance.add(depositAmount);
+                    IO.println("Guncel bakiye: " + loggedInAccount.balance);
                     break;
                 case 2:
-
-
+                    IO.println("cekmek istediginiz miktari giriniz.." +
+                            "\n mevcut bakiye: " + loggedInAccount.balance);
+                    BigDecimal withdrawalAmount = new BigDecimal(sc.nextLine());
+                    loggedInAccount.balance = loggedInAccount.balance.subtract(withdrawalAmount);
+                    IO.println("Guncel bakiye: " + loggedInAccount.balance);
                     break;
                 case 3:
 
