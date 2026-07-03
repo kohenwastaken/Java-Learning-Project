@@ -7,6 +7,9 @@ import java.util.Scanner;
 
 public class Main {
 
+    static int ID = 1;
+
+    static int tID = 1;
 
     public static void main() {
 
@@ -14,20 +17,18 @@ public class Main {
         ArrayList<Account> accountList = new ArrayList<Account>();
         ArrayList<Transaction> transactionList = new ArrayList<Transaction>();
 
-        int tID = 1;
-        int ID = 1;
         int choice;
 
         Scanner sc = new Scanner(System.in);
 
         while (true){
-            IO.println("Banka sistemine hosgeldiniz." +
+
+            choice = readInt(sc, "Banka sistemine hosgeldiniz." +
                     "\n Secenekleriniz asagidaki gibidir:" +
                     "\n 1. Kayit Ol" +
                     "\n 2. Giris yap" +
                     "\n 3. Cikis yap");
-                    choice = sc.nextInt();
-                    sc.nextLine();
+
             switch (choice){
                 case 1:
                     Customer registeredCustomer = registry(sc, ID++);
@@ -36,14 +37,14 @@ public class Main {
                     Account registeredAccount = new Account(registeredCustomer.accID, new BigDecimal("1000"));
                     accountList.add(registeredAccount);
 
-                    IO.println("Hesap olusturuldu");
+                    IO.println("Hesap olusturuldu. ID'niz: " + registeredAccount.accID + "\n");
                     break;
                 case 2:
                     Customer loggedInCustomer = login(sc, customerList);
                     if (loggedInCustomer == null) break;
 
                     //giris sonrasi islemler
-                    accountMenu(sc, loggedInCustomer, accountList, transactionList, tID);
+                    accountMenu(sc, loggedInCustomer, accountList, transactionList);
 
                     break;
                 case 3:
@@ -54,13 +55,18 @@ public class Main {
     }
 
     static Customer registry(Scanner sc, int accID) {
-        IO.println("Ad Soyad giriniz..");
-        String name = sc.nextLine();
+        boolean conditions = false;
+        String name = null;
+        while (!conditions) {
+            IO.println("Ad Soyad giriniz..");
+            name = sc.nextLine();
+            name = name.trim();
+            if (name.contains(" ")) conditions = true;
+        }
 
         IO.println("Sifre Olusturunuz..");
         String pswrd = sc.nextLine();
 
-        name = name.trim();
         int index = name.lastIndexOf(" ");
 
         String firstName = name.substring(0, index);
@@ -71,9 +77,7 @@ public class Main {
 
     static Customer login(Scanner sc, List<Customer> customerList){
 
-        IO.println("Hesap ID giriniz..");
-        int accID = sc.nextInt();
-        sc.nextLine();
+        int accID = readInt(sc, "Hesap ID giriniz..");
 
         Customer requestedCustomer = null;
 
@@ -104,25 +108,30 @@ public class Main {
 
     }
 
-    static Account findAffiliatedAccount(Customer loggedInCustomer, List<Account> accountList)
+    static Account findAffiliatedAccount(int accID, List<Account> accountList)
     {
         Account requestedAccount = null;
         for (Account account1 : accountList)
         {
-            if(account1.accID == loggedInCustomer.accID)
+            if(account1.accID == accID)
             {
                 requestedAccount = account1;
+                return requestedAccount;
             }
         }
         return requestedAccount;
     }
 
-    static void accountMenu(Scanner sc, Customer loggedInCustomer, List<Account> accountList, List<Transaction> transactionList, int tID)
+    static void accountMenu(Scanner sc, Customer loggedInCustomer, List<Account> accountList, List<Transaction> transactionList)
     {
-        Account loggedInAccount = findAffiliatedAccount(loggedInCustomer, accountList);
+        Account loggedInAccount = findAffiliatedAccount(loggedInCustomer.accID, accountList);
+        if (loggedInAccount == null) {
+            IO.println("Beklenmeyen bir hata olustu..");
+            return;
+        }
         while (true)
         {
-            IO.println("Hosgeldiniz " + loggedInCustomer.name + " " + loggedInCustomer.surname + " !" +
+            int choice = readInt(sc, "Hosgeldiniz " + loggedInCustomer.name + " " + loggedInCustomer.surname + " !" +
                     "\n Secenekleriniz asagidaki gibidir:" +
                     "\n 1. Para yatir" +
                     "\n 2. Para cek" +
@@ -130,17 +139,16 @@ public class Main {
                     "\n 4. Hesap hareketleri" +
                     "\n 5. Hesaptan cikis");
 
-            int choice = sc.nextInt();
-            sc.nextLine();
-
             switch (choice){
                 case 1:
-                    IO.println("yatirmak istediginiz miktari giriniz.." +
-                            "\n mevcut bakiye: " + loggedInAccount.balance);
+                    IO.println("mevcut bakiye: " + loggedInAccount.balance);
 
-                    BigDecimal depositAmount = new BigDecimal(sc.nextLine());
+                    BigDecimal depositAmount = readBigDecimal(sc, "yatirmak istediginiz miktari giriniz..");
 
-                    loggedInAccount.addDeposit(depositAmount);
+                    if (!loggedInAccount.moneyDeposit(depositAmount)) {
+                        IO.println("Yatirilan para 0 dan buyuk olmali..");
+                        break;
+                    }
 
                     Transaction x = new Transaction(
                             tID++,
@@ -154,10 +162,14 @@ public class Main {
                     IO.println("Guncel bakiye: " + loggedInAccount.balance);
                     break;
                 case 2:
-                    IO.println("cekmek istediginiz miktari giriniz.." +
-                            "\n mevcut bakiye: " + loggedInAccount.balance);
+                    IO.println("mevcut bakiye: " + loggedInAccount.balance);
 
-                    BigDecimal withdrawalAmount = new BigDecimal(sc.nextLine());
+                    BigDecimal withdrawalAmount = readBigDecimal(sc, "cekmek istediginiz miktari giriniz..");
+
+                    if (!loggedInAccount.moneyWithdraw(withdrawalAmount)){
+                        IO.println("lutfen gecerli bir deger giriniz..");
+                        break;
+                    }
 
                     Transaction y = new Transaction(
                             tID++,
@@ -168,43 +180,42 @@ public class Main {
                             );
                     transactionList.add(y);
 
-                    loggedInAccount.withdrawMoney(withdrawalAmount);
-
                     IO.println("Guncel bakiye: " + loggedInAccount.balance);
                     break;
                 case 3:
-                    IO.println("Para gondermek istediginiz hesabın ID sini girin..");
-                    int targetAccount = sc.nextInt();
-                    sc.nextLine();
 
-                    IO.println("Gondermek istediğiniz para miktarını girin..");
-                    BigDecimal amount = new BigDecimal(sc.nextLine());
+                    int targetID = readInt(sc, "Para gondermek istediginiz hesabın ID sini girin..");
 
-                    if (loggedInAccount.balance.compareTo(amount) >= 0)
-                    {
-                        for (Account account1 : accountList)
-                        {
-                            if (account1.accID == targetAccount)
-                            {
-                                loggedInAccount.balance = loggedInAccount.balance.subtract(amount);
+                    if (targetID == loggedInAccount.accID) {
+                        IO.println("Kendinize para gonderemezsiniz!");
+                        break;
+                    }
 
-                                Transaction z = new Transaction(
-                                        tID++,
-                                        Transaction.TransactionType.SENT,
-                                        amount,
-                                        loggedInAccount.accID,
-                                        targetAccount
-                                );
-                                transactionList.add(z);
+                    Account targetAccount = findAffiliatedAccount(targetID, accountList);
+                    if (targetAccount == null) {
+                        IO.println("Hesap bulunamadi..");
+                        break;
+                    }
 
-                                account1.balance = account1.balance.add(amount);
+                    BigDecimal amount = readBigDecimal(sc, "Gondermek istediginiz para miktarini girin..");
 
+                    if (loggedInAccount.moneySend(amount)) {
+                        targetAccount.moneyReceive(amount);
 
-                                IO.println(amount + " lira basari ile gonderildi..");
-                            }
-                        }
+                        IO.println("Basari ile transfer edildi..");
 
-                    }else IO.println("yeterli para mevcut degildir..");
+                        Transaction z = new Transaction(
+                                tID++,
+                                Transaction.TransactionType.TRANSFER,
+                                amount,
+                                loggedInAccount.accID,
+                                targetID
+                        );
+                        transactionList.add(z);
+                    }else {
+                        IO.println("gecersiz deger girisi..");
+                    }
+
                     break;
                 case 4:
 
@@ -233,6 +244,37 @@ public class Main {
                         "\n miktar: " + tr1.amount +
                         "\n gonderen ID: " + tr1.sourceID +
                         "\n teslim alan ID: " + tr1.targetID + "\t");
+            }
+        }
+    }
+
+    static int readInt (Scanner sc, String message) {
+
+        while (true) {
+            IO.println(message);
+
+            String input = sc.nextLine().trim();
+
+            try {
+                return Integer.parseInt(input);
+            } catch (NumberFormatException e) {
+                IO.println("Lutfen gecerli bir tam sayi giriniz..");
+            }
+        }
+    }
+
+    static BigDecimal readBigDecimal (Scanner sc, String message) {
+
+        while (true) {
+            IO.println(message);
+
+            String input = sc.nextLine().trim();
+            input = input.replace(",", ".");
+
+            try {
+                return new BigDecimal(input);
+            } catch (NumberFormatException e) {
+                IO.println("Lutfen gecerli bir para miktari giriniz.");
             }
         }
     }
