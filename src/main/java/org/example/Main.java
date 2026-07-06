@@ -7,15 +7,17 @@ import java.util.Scanner;
 
 public class Main {
 
-    static int ID = 1;
+    //static int ID = 1;
 
-    static int tID = 1;
+    //static int tID = 1;
 
     public static void main() {
 
-        ArrayList<Customer> customerList = new ArrayList<Customer>();
-        ArrayList<Account> accountList = new ArrayList<Account>();
-        ArrayList<Transaction> transactionList = new ArrayList<Transaction>();
+//        ArrayList<Customer> customerList = new ArrayList<Customer>();
+//        ArrayList<Account> accountList = new ArrayList<Account>();
+//        ArrayList<Transaction> transactionList = new ArrayList<Transaction>();
+
+        BankService bankService = new BankService();
 
         int choice;
 
@@ -31,20 +33,20 @@ public class Main {
 
             switch (choice){
                 case 1:
-                    Customer registeredCustomer = registry(sc, ID++);
-                    customerList.add(registeredCustomer);
 
-                    Account registeredAccount = new Account(registeredCustomer.accID, new BigDecimal("1000"));
-                    accountList.add(registeredAccount);
+                    int userID = handleRegistry(sc, bankService);
 
-                    IO.println("Hesap olusturuldu. ID'niz: " + registeredAccount.accID + "\n");
+                    IO.println("Hesap olusturuldu. ID'niz: " + userID + "\n");
+
                     break;
                 case 2:
-                    Customer loggedInCustomer = login(sc, customerList);
-                    if (loggedInCustomer == null) break;
+
+                    Customer customer = login(sc, bankService);
+
+                    if (customer == null) break;
 
                     //giris sonrasi islemler
-                    accountMenu(sc, loggedInCustomer, accountList, transactionList);
+                    accountMenu(sc, bankService, customer);
 
                     break;
                 case 3:
@@ -54,7 +56,7 @@ public class Main {
         }
     }
 
-    static Customer registry(Scanner sc, int accID) {
+    static int handleRegistry(Scanner sc, BankService bankService) {
         boolean conditions = false;
         String name = null;
         while (!conditions) {
@@ -72,40 +74,25 @@ public class Main {
         String firstName = name.substring(0, index);
         String lastName = name.substring(index + 1);
 
-        return new Customer(firstName, lastName, pswrd, accID);
+        return bankService.registerCustomer(firstName, lastName, pswrd).accID;
     }
 
-    static Customer login(Scanner sc, List<Customer> customerList){
+    static Customer login(Scanner sc, BankService bankService){
 
-        int accID = readInt(sc, "Hesap ID giriniz..");
-
-        Customer requestedCustomer = null;
-
-        for (Customer customer1 : customerList){
-            if(customer1.accID == accID)
-            {
-                requestedCustomer = customer1;
-                break;
-            }
-        }
-
-        if (requestedCustomer == null)
-        {
-            IO.println("Belirtilen ID yoktur. Sisteme geri donuluyor..");
-            return null;
-        }
+        int userID = readInt(sc, "Hesap ID giriniz..");
 
         IO.println("Sifre giriniz..");
         String enteredPswrd = sc.nextLine();
-        if (enteredPswrd.equals(requestedCustomer.pswrd))
+
+        Customer customer = bankService.loginAccount(userID, enteredPswrd);
+
+        if (customer == null)
         {
-            return requestedCustomer;
-        }
-        else{
-            IO.println("Sifre yanlis. Sisteme geri donuluyor..");
+            IO.println("ID ya da sifre yanlis. Sisteme geri donuluyor..");
             return null;
         }
 
+        return customer;
     }
 
     static Account findAffiliatedAccount(int accID, List<Account> accountList)
@@ -122,16 +109,16 @@ public class Main {
         return requestedAccount;
     }
 
-    static void accountMenu(Scanner sc, Customer loggedInCustomer, List<Account> accountList, List<Transaction> transactionList)
+    static void accountMenu(Scanner sc, BankService bankService, Customer customer)
     {
-        Account loggedInAccount = findAffiliatedAccount(loggedInCustomer.accID, accountList);
-        if (loggedInAccount == null) {
+        Account account = findAffiliatedAccount(customer.accID, accountList);
+        if (account == null) {
             IO.println("Beklenmeyen bir hata olustu..");
             return;
         }
         while (true)
         {
-            int choice = readInt(sc, "Hosgeldiniz " + loggedInCustomer.name + " " + loggedInCustomer.surname + " !" +
+            int choice = readInt(sc, "Hosgeldiniz " + customer.name + " " + customer.surname + " !" +
                     "\n Secenekleriniz asagidaki gibidir:" +
                     "\n 1. Para yatir" +
                     "\n 2. Para cek" +
@@ -141,11 +128,11 @@ public class Main {
 
             switch (choice){
                 case 1:
-                    IO.println("mevcut bakiye: " + loggedInAccount.balance);
+                    IO.println("mevcut bakiye: " + account.balance);
 
                     BigDecimal depositAmount = readBigDecimal(sc, "yatirmak istediginiz miktari giriniz..");
 
-                    if (!loggedInAccount.moneyDeposit(depositAmount)) {
+                    if (!account.moneyDeposit(depositAmount)) {
                         IO.println("Yatirilan para 0 dan buyuk olmali..");
                         break;
                     }
@@ -154,19 +141,19 @@ public class Main {
                             tID++,
                             Transaction.TransactionType.DEPOSIT,
                             depositAmount,
-                            loggedInAccount.accID,
+                            account.accID,
                             null
                     );
                     transactionList.add(x);
 
-                    IO.println("Guncel bakiye: " + loggedInAccount.balance);
+                    IO.println("Guncel bakiye: " + account.balance);
                     break;
                 case 2:
-                    IO.println("mevcut bakiye: " + loggedInAccount.balance);
+                    IO.println("mevcut bakiye: " + account.balance);
 
                     BigDecimal withdrawalAmount = readBigDecimal(sc, "cekmek istediginiz miktari giriniz..");
 
-                    if (!loggedInAccount.moneyWithdraw(withdrawalAmount)){
+                    if (!account.moneyWithdraw(withdrawalAmount)){
                         IO.println("lutfen gecerli bir deger giriniz..");
                         break;
                     }
@@ -175,18 +162,18 @@ public class Main {
                             tID++,
                             Transaction.TransactionType.WITHDRAWAL,
                             withdrawalAmount,
-                            loggedInAccount.accID,
+                            account.accID,
                             null
                             );
                     transactionList.add(y);
 
-                    IO.println("Guncel bakiye: " + loggedInAccount.balance);
+                    IO.println("Guncel bakiye: " + account.balance);
                     break;
                 case 3:
 
                     int targetID = readInt(sc, "Para gondermek istediginiz hesabın ID sini girin..");
 
-                    if (targetID == loggedInAccount.accID) {
+                    if (targetID == account.accID) {
                         IO.println("Kendinize para gonderemezsiniz!");
                         break;
                     }
@@ -199,7 +186,7 @@ public class Main {
 
                     BigDecimal amount = readBigDecimal(sc, "Gondermek istediginiz para miktarini girin..");
 
-                    if (loggedInAccount.moneySend(amount)) {
+                    if (account.moneySend(amount)) {
                         targetAccount.moneyReceive(amount);
 
                         IO.println("Basari ile transfer edildi..");
@@ -208,7 +195,7 @@ public class Main {
                                 tID++,
                                 Transaction.TransactionType.TRANSFER,
                                 amount,
-                                loggedInAccount.accID,
+                                account.accID,
                                 targetID
                         );
                         transactionList.add(z);
@@ -219,7 +206,7 @@ public class Main {
                     break;
                 case 4:
 
-                    writeLog(transactionList, loggedInAccount);
+                    writeLog(transactionList, account);
 
                     break;
                 case 5:
