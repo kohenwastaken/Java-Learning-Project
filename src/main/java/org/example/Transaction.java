@@ -8,15 +8,15 @@ public class Transaction {
         DEPOSIT, WITHDRAWAL, TRANSFER, SENT, RECEIVED
     }
 
-    int transactionID;
+    private final int transactionID;
 
-    TransactionType type;
+    private final TransactionType type;
 
-    BigDecimal amount;
+    private final BigDecimal amount;
 
-    int sourceID;
+    private final int sourceID;
 
-    Integer targetID;
+    private final Integer targetID;
 
     public Transaction(
             int transactionID,
@@ -31,5 +31,25 @@ public class Transaction {
         this.amount = amount;
         this.sourceID = sourceID;
         this.targetID = targetID;
+    }
+
+    public int getTransactionID() {
+        return transactionID;
+    }
+
+    public TransactionType getType() {
+        return type;
+    }
+
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    public int getSourceID() {
+        return sourceID;
+    }
+
+    public Integer getTargetID() {
+        return targetID;
     }
 }

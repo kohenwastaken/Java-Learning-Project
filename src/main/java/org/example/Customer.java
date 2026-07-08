@@ -2,18 +2,32 @@ package org.example;
 
 public class Customer {
 
-    String name;
-    String surname;
-    String pswrd;
-    int accID;
+    private final int accID;
+    private String name;
+    private String surname;
+    private String password;
 
-    public Customer(String name, String surname,String pswrd, int accID)
+    public Customer(String name, String surname,String password, int accID)
     {
         this.name = name;
         this.surname = surname;
-        this.pswrd = pswrd;
+        this.password = password;
         this.accID = accID;
     }
 
+    public int getAccID() {
+        return accID;
+    }
 
+    public String getName() {
+        return name;
+    }
+
+    public String getSurname() {
+        return surname;
+    }
+
+    public boolean passwordMatches(String inputPassword) {
+        return this.password.equals(inputPassword);
+    }
 }

@@ -1,21 +1,12 @@
 package org.example;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 public class Main {
 
-    //static int ID = 1;
-
-    //static int tID = 1;
-
     public static void main() {
-
-//        ArrayList<Customer> customerList = new ArrayList<Customer>();
-//        ArrayList<Account> accountList = new ArrayList<Account>();
-//        ArrayList<Transaction> transactionList = new ArrayList<Transaction>();
 
         BankService bankService = new BankService();
 
@@ -74,7 +65,7 @@ public class Main {
         String firstName = name.substring(0, index);
         String lastName = name.substring(index + 1);
 
-        return bankService.registerCustomer(firstName, lastName, pswrd).accID;
+        return bankService.registerCustomer(firstName, lastName, pswrd).getAccID();
     }
 
     static Customer login(Scanner sc, BankService bankService){
@@ -95,30 +86,11 @@ public class Main {
         return customer;
     }
 
-    static Account findAffiliatedAccount(int accID, List<Account> accountList)
-    {
-        Account requestedAccount = null;
-        for (Account account1 : accountList)
-        {
-            if(account1.accID == accID)
-            {
-                requestedAccount = account1;
-                return requestedAccount;
-            }
-        }
-        return requestedAccount;
-    }
-
     static void accountMenu(Scanner sc, BankService bankService, Customer customer)
     {
-        Account account = findAffiliatedAccount(customer.accID, accountList);
-        if (account == null) {
-            IO.println("Beklenmeyen bir hata olustu..");
-            return;
-        }
         while (true)
         {
-            int choice = readInt(sc, "Hosgeldiniz " + customer.name + " " + customer.surname + " !" +
+            int choice = readInt(sc, "Hosgeldiniz " + customer.getName() + " " + customer.getSurname() + " !" +
                     "\n Secenekleriniz asagidaki gibidir:" +
                     "\n 1. Para yatir" +
                     "\n 2. Para cek" +
@@ -128,85 +100,54 @@ public class Main {
 
             switch (choice){
                 case 1:
-                    IO.println("mevcut bakiye: " + account.balance);
+
+                    IO.println("mevcut bakiye: " + bankService.showBalance(customer.getAccID()));
 
                     BigDecimal depositAmount = readBigDecimal(sc, "yatirmak istediginiz miktari giriniz..");
 
-                    if (!account.moneyDeposit(depositAmount)) {
-                        IO.println("Yatirilan para 0 dan buyuk olmali..");
-                        break;
+                    DepositResult result = bankService.depositToAccount(customer.getAccID(), depositAmount);
+
+                    switch (result){
+                        case SUCCESS -> IO.println("Guncel bakiye: " + bankService.showBalance(customer.getAccID()));
+                        case INVALID_AMOUNT -> IO.println("Yatirilan para 0 dan buyuk olmali..");
                     }
 
-                    Transaction x = new Transaction(
-                            tID++,
-                            Transaction.TransactionType.DEPOSIT,
-                            depositAmount,
-                            account.accID,
-                            null
-                    );
-                    transactionList.add(x);
-
-                    IO.println("Guncel bakiye: " + account.balance);
                     break;
                 case 2:
-                    IO.println("mevcut bakiye: " + account.balance);
+                    IO.println("mevcut bakiye: " + bankService.showBalance(customer.getAccID()));
 
                     BigDecimal withdrawalAmount = readBigDecimal(sc, "cekmek istediginiz miktari giriniz..");
 
-                    if (!account.moneyWithdraw(withdrawalAmount)){
-                        IO.println("lutfen gecerli bir deger giriniz..");
-                        break;
+                    WithdrawResult result1 = bankService.withdrawFromAccount(customer.getAccID(), withdrawalAmount);
+
+                    switch (result1){
+                        case SUCCESS -> IO.println("Guncel bakiye: " + bankService.showBalance(customer.getAccID()));
+                        case INSUFFICIENT_BALANCE -> IO.println("Yetersiz bakiye..");
+                        case INVALID_AMOUNT -> IO.println("Gecersiz deger..");
                     }
 
-                    Transaction y = new Transaction(
-                            tID++,
-                            Transaction.TransactionType.WITHDRAWAL,
-                            withdrawalAmount,
-                            account.accID,
-                            null
-                            );
-                    transactionList.add(y);
-
-                    IO.println("Guncel bakiye: " + account.balance);
                     break;
                 case 3:
 
                     int targetID = readInt(sc, "Para gondermek istediginiz hesabın ID sini girin..");
 
-                    if (targetID == account.accID) {
-                        IO.println("Kendinize para gonderemezsiniz!");
-                        break;
-                    }
-
-                    Account targetAccount = findAffiliatedAccount(targetID, accountList);
-                    if (targetAccount == null) {
-                        IO.println("Hesap bulunamadi..");
-                        break;
-                    }
-
                     BigDecimal amount = readBigDecimal(sc, "Gondermek istediginiz para miktarini girin..");
 
-                    if (account.moneySend(amount)) {
-                        targetAccount.moneyReceive(amount);
+                    TransferResult result2 = bankService.transferFromAccount(customer.getAccID(), targetID, amount);
 
-                        IO.println("Basari ile transfer edildi..");
-
-                        Transaction z = new Transaction(
-                                tID++,
-                                Transaction.TransactionType.TRANSFER,
-                                amount,
-                                account.accID,
-                                targetID
-                        );
-                        transactionList.add(z);
-                    }else {
-                        IO.println("gecersiz deger girisi..");
+                    switch (result2){
+                        case SUCCESS -> IO.println("Basari ile transfer edildi..");
+                        case ACCOUNT_NOT_FOUND -> IO.println("Hesap bulunamadi..");
+                        case INVALID_SELF_ID -> IO.println("Kendinize para gonderemezsiniz..");
+                        case INVALID_AMOUNT -> IO.println("Gecersiz deger girisi..");
+                        case INSUFFICIENT_BALANCE -> IO.println("Yetersiz bakiye..");
                     }
 
                     break;
                 case 4:
 
-                    writeLog(transactionList, account);
+                    List<Transaction> transactions = bankService.getTransactionsForAccount(customer.getAccID());
+                    writeLog(transactions);
 
                     break;
                 case 5:
@@ -216,22 +157,21 @@ public class Main {
         }
     }
 
-    static void writeLog(List<Transaction> transactionList, Account loggedInAccount) {
+    static void writeLog(List<Transaction> transactionList) {
 
         int num = 1;
+        if (transactionList.isEmpty()) {
+            IO.println("Henuz islem gecmisi yok.");
+            return;
+        }
         for (Transaction tr1 : transactionList)
         {
-            if (tr1.sourceID == loggedInAccount.accID ||
-                    (tr1.targetID != null && tr1.targetID == loggedInAccount.accID) // null fix
-            )
-            {
-                IO.println("numara: " + num++ +
-                        "\n logID: " + tr1.transactionID +
-                        "\n islem turu: " + tr1.type +
-                        "\n miktar: " + tr1.amount +
-                        "\n gonderen ID: " + tr1.sourceID +
-                        "\n teslim alan ID: " + tr1.targetID + "\t");
-            }
+            IO.println("numara: " + num++ +
+                    "\n logID: " + tr1.getTransactionID() +
+                    "\n islem turu: " + tr1.getType() +
+                    "\n miktar: " + tr1.getAmount() +
+                    "\n gonderen ID: " + tr1.getSourceID() +
+                    "\n teslim alan ID: " + tr1.getTargetID() + "\t");
         }
     }
 
