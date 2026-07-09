@@ -109,7 +109,11 @@ public class BankService {
 
         TransferResult result = senderAccount.moneySend(amount);
         if (result == TransferResult.SUCCESS) {
-            receiverAccount.moneyReceive(amount);
+            boolean receiveResult = receiverAccount.moneyReceive(amount);
+
+            if (!receiveResult) {
+                throw new IllegalArgumentException("Gecersiz Deger: " + amount);
+            }
             Transaction z = new Transaction(
                     this.transactionID++,
                     Transaction.TransactionType.TRANSFER,

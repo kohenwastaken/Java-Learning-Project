@@ -51,7 +51,10 @@ public class Account {
         return TransferResult.SUCCESS;
     }
 
-    void moneyReceive(BigDecimal amount) {
+    boolean moneyReceive(BigDecimal amount) {
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) return false;
+
         this.balance = this.balance.add(amount);
+        return true;
     }
 }
