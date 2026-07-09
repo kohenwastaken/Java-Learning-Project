@@ -15,7 +15,7 @@ public class Customer {
         this.accID = accID;
     }
 
-    public int getAccID() {
+    public int getAccId() {
         return accID;
     }
 

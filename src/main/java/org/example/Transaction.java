@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 public class Transaction {
 
     public enum TransactionType {
-        DEPOSIT, WITHDRAWAL, TRANSFER, SENT, RECEIVED
+        DEPOSIT, WITHDRAWAL, TRANSFER
     }
 
     private final int transactionID;

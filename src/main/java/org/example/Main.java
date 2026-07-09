@@ -6,7 +6,7 @@ import java.util.Scanner;
 
 public class Main {
 
-    public static void main() {
+    public static void main(String[] args) {
 
         BankService bankService = new BankService();
 
@@ -65,7 +65,7 @@ public class Main {
         String firstName = name.substring(0, index);
         String lastName = name.substring(index + 1);
 
-        return bankService.registerCustomer(firstName, lastName, pswrd).getAccID();
+        return bankService.registerCustomer(firstName, lastName, pswrd).getAccId();
     }
 
     static Customer login(Scanner sc, BankService bankService){
@@ -101,27 +101,27 @@ public class Main {
             switch (choice){
                 case 1:
 
-                    IO.println("mevcut bakiye: " + bankService.showBalance(customer.getAccID()));
+                    IO.println("mevcut bakiye: " + bankService.showBalance(customer.getAccId()));
 
                     BigDecimal depositAmount = readBigDecimal(sc, "yatirmak istediginiz miktari giriniz..");
 
-                    DepositResult result = bankService.depositToAccount(customer.getAccID(), depositAmount);
+                    DepositResult result = bankService.depositToAccount(customer.getAccId(), depositAmount);
 
                     switch (result){
-                        case SUCCESS -> IO.println("Guncel bakiye: " + bankService.showBalance(customer.getAccID()));
+                        case SUCCESS -> IO.println("Guncel bakiye: " + bankService.showBalance(customer.getAccId()));
                         case INVALID_AMOUNT -> IO.println("Yatirilan para 0 dan buyuk olmali..");
                     }
 
                     break;
                 case 2:
-                    IO.println("mevcut bakiye: " + bankService.showBalance(customer.getAccID()));
+                    IO.println("mevcut bakiye: " + bankService.showBalance(customer.getAccId()));
 
                     BigDecimal withdrawalAmount = readBigDecimal(sc, "cekmek istediginiz miktari giriniz..");
 
-                    WithdrawResult result1 = bankService.withdrawFromAccount(customer.getAccID(), withdrawalAmount);
+                    WithdrawResult result1 = bankService.withdrawFromAccount(customer.getAccId(), withdrawalAmount);
 
                     switch (result1){
-                        case SUCCESS -> IO.println("Guncel bakiye: " + bankService.showBalance(customer.getAccID()));
+                        case SUCCESS -> IO.println("Guncel bakiye: " + bankService.showBalance(customer.getAccId()));
                         case INSUFFICIENT_BALANCE -> IO.println("Yetersiz bakiye..");
                         case INVALID_AMOUNT -> IO.println("Gecersiz deger..");
                     }
@@ -133,7 +133,7 @@ public class Main {
 
                     BigDecimal amount = readBigDecimal(sc, "Gondermek istediginiz para miktarini girin..");
 
-                    TransferResult result2 = bankService.transferFromAccount(customer.getAccID(), targetID, amount);
+                    TransferResult result2 = bankService.transferFromAccount(customer.getAccId(), targetID, amount);
 
                     switch (result2){
                         case SUCCESS -> IO.println("Basari ile transfer edildi..");
@@ -146,7 +146,7 @@ public class Main {
                     break;
                 case 4:
 
-                    List<Transaction> transactions = bankService.getTransactionsForAccount(customer.getAccID());
+                    List<Transaction> transactions = bankService.getTransactionsForAccount(customer.getAccId());
                     writeLog(transactions);
 
                     break;

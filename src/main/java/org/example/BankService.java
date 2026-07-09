@@ -6,11 +6,11 @@ import java.util.List;
 
 public class BankService {
 
-    private List<Customer> customerList = new ArrayList<>();
+    private final List<Customer> customerList = new ArrayList<>();
 
-    private List<Account> accountList = new ArrayList<>();
+    private final List<Account> accountList = new ArrayList<>();
 
-    private  List<Transaction> transactionList = new ArrayList<>();
+    private  final List<Transaction> transactionList = new ArrayList<>();
 
     private int userID = 1;
 
@@ -21,7 +21,7 @@ public class BankService {
         Customer customer = new Customer(name, surname, password, this.userID);
         this.customerList.add(customer);
 
-        Account account = new Account(this.userID, new BigDecimal(1000));
+        Account account = new Account(this.userID, BigDecimal.valueOf(1000));
         this.accountList.add(account);
 
         this.userID++;
@@ -32,7 +32,7 @@ public class BankService {
     Customer loginAccount (int userID, String password) {
 
         for (Customer customer : customerList){
-            if(customer.getAccID() == userID && customer.passwordMatches(password))
+            if(customer.getAccId() == userID && customer.passwordMatches(password))
             {
                 return customer;
             }
@@ -40,7 +40,7 @@ public class BankService {
         return null;
     }
 
-    private Account findAccountByID(int userID) {
+    private Account findAccountById(int userID) {
         for (Account account : this.accountList) {
             if (account.getAccID() == userID) {
                 return account;
@@ -49,7 +49,7 @@ public class BankService {
         throw new IllegalArgumentException("Hesap bulunamadi: " + userID);
     }
 
-    private Account searchAccountByID(int targetID) {
+    private Account searchAccountById(int targetID) {
         for (Account account : this.accountList) {
             if (account.getAccID() == targetID)
                 return account;
@@ -58,13 +58,13 @@ public class BankService {
     }
 
     BigDecimal showBalance(int userID) {
-        Account account = findAccountByID(userID);
+        Account account = findAccountById(userID);
         return account.getBalance();
     }
 
     DepositResult depositToAccount(int userID, BigDecimal amount) {
 
-        Account account = findAccountByID(userID);
+        Account account = findAccountById(userID);
         if (account.moneyDeposit(amount)) {
 
             Transaction x = new Transaction(
@@ -83,7 +83,7 @@ public class BankService {
 
     WithdrawResult withdrawFromAccount(int userID, BigDecimal amount) {
 
-        Account account = findAccountByID(userID);
+        Account account = findAccountById(userID);
 
         WithdrawResult result = account.moneyWithdraw(amount);
 
@@ -102,8 +102,8 @@ public class BankService {
 
     TransferResult transferFromAccount(int userID, int targetID, BigDecimal amount){
 
-        Account senderAccount = findAccountByID(userID);
-        Account receiverAccount = searchAccountByID(targetID);
+        Account senderAccount = findAccountById(userID);
+        Account receiverAccount = searchAccountById(targetID);
         if (receiverAccount == null) return TransferResult.ACCOUNT_NOT_FOUND;
         if (receiverAccount.getAccID() == senderAccount.getAccID()) return TransferResult.INVALID_SELF_ID;
 
