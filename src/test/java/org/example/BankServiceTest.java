@@ -320,7 +320,7 @@ public class BankServiceTest {
         Customer customer = bankService.registerCustomer("Arif", "Yılmaz", "123");
         Customer customer1 = bankService.registerCustomer("Arif", "Ada", "123");
         BigDecimal balanceBefore = bankService.showBalance(customer.getAccId());
-        BigDecimal balanceBefore1 = bankService.showBalance(customer.getAccId());
+        BigDecimal balanceBefore1 = bankService.showBalance(customer1.getAccId());
 
         TransferResult result = bankService.transferFromAccount(customer.getAccId(), customer1.getAccId(), BigDecimal.valueOf(99999));
 
