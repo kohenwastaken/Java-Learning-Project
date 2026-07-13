@@ -1,4 +1,11 @@
-package org.example;
+package org.example.bank.adapter.in.cli;
+
+import org.example.bank.application.service.BankService;
+import org.example.bank.domain.model.Customer;
+import org.example.bank.domain.model.Transaction;
+import org.example.bank.domain.result.DepositResult;
+import org.example.bank.domain.result.TransferResult;
+import org.example.bank.domain.result.WithdrawResult;
 
 import java.math.BigDecimal;
 import java.util.List;

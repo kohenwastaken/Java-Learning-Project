@@ -1,8 +1,19 @@
-package org.example;
+package org.example.bank.application.service;
+
+import org.example.bank.domain.model.Account;
+import org.example.bank.domain.model.Customer;
+import org.example.bank.domain.model.Transaction;
+import org.example.bank.domain.result.DepositResult;
+import org.example.bank.domain.result.TransferResult;
+import org.example.bank.domain.result.WithdrawResult;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+
+private final CustomerRepository customerRepository;
+private final AccountRepository accountRepository;
+private final TransactionRepository transactionRepository;
 
 public class BankService {
 
@@ -16,7 +27,17 @@ public class BankService {
 
     private int transactionID = 1;
 
-    Customer registerCustomer (String name, String surname, String password) {
+    public BankService(
+            CustomerRepository customerRepository,
+            AccountRepository accountRepository,
+            TransactionRepository transactionRepository
+    ) {
+        this.customerRepository = customerRepository;
+        this.accountRepository = accountRepository;
+        this.transactionRepository = transactionRepository;
+    }
+
+    public Customer registerCustomer (String name, String surname, String password) {
 
         Customer customer = new Customer(name, surname, password, this.userID);
         this.customerList.add(customer);
@@ -29,7 +50,7 @@ public class BankService {
         return customer;
     }
 
-    Customer loginAccount (int userID, String password) {
+    public Customer loginAccount (int userID, String password) {
 
         for (Customer customer : customerList){
             if(customer.getAccId() == userID && customer.passwordMatches(password))
@@ -57,12 +78,12 @@ public class BankService {
         return null;
     }
 
-    BigDecimal showBalance(int userID) {
+    public BigDecimal showBalance(int userID) {
         Account account = findAccountById(userID);
         return account.getBalance();
     }
 
-    DepositResult depositToAccount(int userID, BigDecimal amount) {
+    public DepositResult depositToAccount(int userID, BigDecimal amount) {
 
         Account account = findAccountById(userID);
         if (account.moneyDeposit(amount)) {
@@ -81,7 +102,7 @@ public class BankService {
         else return DepositResult.INVALID_AMOUNT;
     }
 
-    WithdrawResult withdrawFromAccount(int userID, BigDecimal amount) {
+    public WithdrawResult withdrawFromAccount(int userID, BigDecimal amount) {
 
         Account account = findAccountById(userID);
 
@@ -100,7 +121,7 @@ public class BankService {
         return result;
     }
 
-    TransferResult transferFromAccount(int userID, int targetID, BigDecimal amount){
+    public TransferResult transferFromAccount(int userID, int targetID, BigDecimal amount){
 
         Account senderAccount = findAccountById(userID);
         Account receiverAccount = searchAccountById(targetID);
@@ -126,7 +147,7 @@ public class BankService {
         return result;
     }
 
-    List<Transaction> getTransactionsForAccount (int userID) {
+    public List<Transaction> getTransactionsForAccount (int userID) {
         List<Transaction> result = new ArrayList<Transaction>();
         for (Transaction transaction : this.transactionList) {
             if (transaction.getSourceID() == userID ||

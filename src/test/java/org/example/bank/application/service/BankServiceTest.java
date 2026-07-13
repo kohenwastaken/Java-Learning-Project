@@ -1,5 +1,10 @@
-package org.example;
+package org.example.bank.application.service;
 
+import org.example.bank.domain.model.Customer;
+import org.example.bank.domain.model.Transaction;
+import org.example.bank.domain.result.DepositResult;
+import org.example.bank.domain.result.TransferResult;
+import org.example.bank.domain.result.WithdrawResult;
 import org.junit.jupiter.api.Test;
 
 

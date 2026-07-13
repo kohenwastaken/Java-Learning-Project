@@ -1,4 +1,7 @@
-package org.example;
+package org.example.bank.domain.model;
+
+import org.example.bank.domain.result.TransferResult;
+import org.example.bank.domain.result.WithdrawResult;
 
 import java.math.BigDecimal;
 
@@ -21,7 +24,7 @@ public class Account {
         return this.balance;
     }
 
-    boolean moneyDeposit(BigDecimal amount)
+    public boolean moneyDeposit(BigDecimal amount)
     {
         if (amount.compareTo(BigDecimal.ZERO) <= 0) return false;
 
@@ -29,7 +32,7 @@ public class Account {
         return true;
     }
 
-    WithdrawResult moneyWithdraw(BigDecimal amount) {
+    public WithdrawResult moneyWithdraw(BigDecimal amount) {
 
         //amount 0 dan buyuk olmali
         if (amount.compareTo(BigDecimal.ZERO) <= 0) return WithdrawResult.INVALID_AMOUNT;
@@ -41,7 +44,7 @@ public class Account {
         return WithdrawResult.SUCCESS;
     }
 
-    TransferResult moneySend(BigDecimal amount) {
+    public TransferResult moneySend(BigDecimal amount) {
 
         if (BigDecimal.ZERO.compareTo(amount) >= 0) return TransferResult.INVALID_AMOUNT;
 
@@ -51,7 +54,7 @@ public class Account {
         return TransferResult.SUCCESS;
     }
 
-    boolean moneyReceive(BigDecimal amount) {
+    public boolean moneyReceive(BigDecimal amount) {
         if (amount.compareTo(BigDecimal.ZERO) <= 0) return false;
 
         this.balance = this.balance.add(amount);
