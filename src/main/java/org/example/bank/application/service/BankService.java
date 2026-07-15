@@ -1,5 +1,8 @@
 package org.example.bank.application.service;
 
+import org.example.bank.application.port.out.AccountRepository;
+import org.example.bank.application.port.out.CustomerRepository;
+import org.example.bank.application.port.out.TransactionRepository;
 import org.example.bank.domain.model.Account;
 import org.example.bank.domain.model.Customer;
 import org.example.bank.domain.model.Transaction;
@@ -8,24 +11,18 @@ import org.example.bank.domain.result.TransferResult;
 import org.example.bank.domain.result.WithdrawResult;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
-private final CustomerRepository customerRepository;
-private final AccountRepository accountRepository;
-private final TransactionRepository transactionRepository;
 
 public class BankService {
 
-    private final List<Customer> customerList = new ArrayList<>();
+    private final CustomerRepository customerRepository;
+    private final AccountRepository accountRepository;
+    private final TransactionRepository transactionRepository;
 
-    private final List<Account> accountList = new ArrayList<>();
-
-    private  final List<Transaction> transactionList = new ArrayList<>();
-
-    private int userID = 1;
-
-    private int transactionID = 1;
+    private int userId = 1;
+    private int transactionId = 1;
 
     public BankService(
             CustomerRepository customerRepository,
@@ -39,123 +36,114 @@ public class BankService {
 
     public Customer registerCustomer (String name, String surname, String password) {
 
-        Customer customer = new Customer(name, surname, password, this.userID);
-        this.customerList.add(customer);
+        Customer customer = new Customer(name, surname, password, this.userId);
+        customerRepository.save(customer);
 
-        Account account = new Account(this.userID, BigDecimal.valueOf(1000));
-        this.accountList.add(account);
+        Account account = new Account(this.userId, BigDecimal.valueOf(1000));
+        accountRepository.save(account);
 
-        this.userID++;
+        this.userId++;
 
         return customer;
     }
 
-    public Customer loginAccount (int userID, String password) {
-
-        for (Customer customer : customerList){
-            if(customer.getAccId() == userID && customer.passwordMatches(password))
-            {
-                return customer;
-            }
-        }
-        return null;
+    public Customer loginAccount (int userId, String password) {
+        return customerRepository.findById(userId)
+                .filter(customer -> customer.passwordMatches(password))
+                .orElse(null);
     }
 
-    private Account findAccountById(int userID) {
-        for (Account account : this.accountList) {
-            if (account.getAccID() == userID) {
-                return account;
-            }
-        }
-        throw new IllegalArgumentException("Hesap bulunamadi: " + userID);
+    private Account findAccountById(int accountId) {
+        return accountRepository.findById(accountId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Hesap bulunamadi: " + accountId)
+                );
     }
 
-    private Account searchAccountById(int targetID) {
-        for (Account account : this.accountList) {
-            if (account.getAccID() == targetID)
-                return account;
-        }
-        return null;
-    }
-
-    public BigDecimal showBalance(int userID) {
-        Account account = findAccountById(userID);
+    public BigDecimal showBalance(int userId) {
+        Account account = findAccountById(userId);
         return account.getBalance();
     }
 
-    public DepositResult depositToAccount(int userID, BigDecimal amount) {
+    public DepositResult depositToAccount(int userId, BigDecimal amount) {
 
-        Account account = findAccountById(userID);
+        Account account = findAccountById(userId);
         if (account.moneyDeposit(amount)) {
+            accountRepository.save(account);
 
             Transaction x = new Transaction(
-                    this.transactionID++,
+                    this.transactionId++,
                     Transaction.TransactionType.DEPOSIT,
                     amount,
-                    account.getAccID(),
+                    account.getAccId(),
                     null
             );
-            this.transactionList.add(x);
+            transactionRepository.save(x);
 
             return DepositResult.SUCCESS;
         }
         else return DepositResult.INVALID_AMOUNT;
     }
 
-    public WithdrawResult withdrawFromAccount(int userID, BigDecimal amount) {
+    public WithdrawResult withdrawFromAccount(int userId, BigDecimal amount) {
 
-        Account account = findAccountById(userID);
+        Account account = findAccountById(userId);
 
         WithdrawResult result = account.moneyWithdraw(amount);
 
         if (result == WithdrawResult.SUCCESS) {
+            accountRepository.save(account);
+
             Transaction y = new Transaction(
-                    this.transactionID++,
+                    this.transactionId++,
                     Transaction.TransactionType.WITHDRAWAL,
                     amount,
-                    account.getAccID(),
+                    account.getAccId(),
                     null
             );
-            this.transactionList.add(y);
+            transactionRepository.save(y);
         }
         return result;
     }
 
-    public TransferResult transferFromAccount(int userID, int targetID, BigDecimal amount){
+    public TransferResult transferFromAccount(int userId, int targetId, BigDecimal amount){
 
-        Account senderAccount = findAccountById(userID);
-        Account receiverAccount = searchAccountById(targetID);
-        if (receiverAccount == null) return TransferResult.ACCOUNT_NOT_FOUND;
-        if (receiverAccount.getAccID() == senderAccount.getAccID()) return TransferResult.INVALID_SELF_ID;
+        Account senderAccount = findAccountById(userId);
+        Optional<Account> receiverOptional = accountRepository.findById(targetId);
+
+        if (receiverOptional.isEmpty()) return TransferResult.ACCOUNT_NOT_FOUND;
+
+        Account receiverAccount = receiverOptional.get();
+
+        if (receiverAccount.getAccId() == senderAccount.getAccId()) return TransferResult.INVALID_SELF_ID;
 
         TransferResult result = senderAccount.moneySend(amount);
-        if (result == TransferResult.SUCCESS) {
-            boolean receiveResult = receiverAccount.moneyReceive(amount);
 
-            if (!receiveResult) {
-                throw new IllegalArgumentException("Gecersiz Deger: " + amount);
-            }
-            Transaction z = new Transaction(
-                    this.transactionID++,
-                    Transaction.TransactionType.TRANSFER,
-                    amount,
-                    senderAccount.getAccID(),
-                    receiverAccount.getAccID()
-            );
-            this.transactionList.add(z);
+        if (result != TransferResult.SUCCESS) return result;
+
+        boolean receiveResult = receiverAccount.moneyReceive(amount);
+
+        if (!receiveResult) {
+            throw new IllegalStateException("Transfer basarili ama alici hesaba gitmedi: " + amount);
         }
-        return result;
+
+        accountRepository.save(senderAccount);
+        accountRepository.save(receiverAccount);
+
+        Transaction z = new Transaction(
+                this.transactionId++,
+                Transaction.TransactionType.TRANSFER,
+                amount,
+                senderAccount.getAccId(),
+                receiverAccount.getAccId()
+        );
+        transactionRepository.save(z);
+
+        return TransferResult.SUCCESS;
     }
 
-    public List<Transaction> getTransactionsForAccount (int userID) {
-        List<Transaction> result = new ArrayList<Transaction>();
-        for (Transaction transaction : this.transactionList) {
-            if (transaction.getSourceID() == userID ||
-                    (transaction.getTargetID() != null) && transaction.getTargetID() == userID) {
-                result.add(transaction);
-            }
-        }
-        return result;
+    public List<Transaction> getTransactionsForAccount(int userId) {
+        return transactionRepository.findByAccountId(userId);
     }
 
 }

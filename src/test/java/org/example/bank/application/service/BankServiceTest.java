@@ -1,10 +1,14 @@
 package org.example.bank.application.service;
 
+import org.example.bank.adapter.out.memory.InMemoryAccountRepository;
+import org.example.bank.adapter.out.memory.InMemoryCustomerRepository;
+import org.example.bank.adapter.out.memory.InMemoryTransactionRepository;
 import org.example.bank.domain.model.Customer;
 import org.example.bank.domain.model.Transaction;
 import org.example.bank.domain.result.DepositResult;
 import org.example.bank.domain.result.TransferResult;
 import org.example.bank.domain.result.WithdrawResult;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 
@@ -15,10 +19,20 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class BankServiceTest {
 
+    private BankService bankService;
+
+    @BeforeEach
+    void setUp() {
+        bankService = new BankService(
+                new InMemoryCustomerRepository(),
+                new InMemoryAccountRepository(),
+                new InMemoryTransactionRepository()
+        );
+    }
+
     @Test
     void registerCustomer_shouldCreateCustomerWithInitialBalance() {
         //arrange
-        BankService bankService = new BankService();
 
         //act
         Customer customer = bankService.registerCustomer("Arif", "Yılmaz", "123");
@@ -34,7 +48,6 @@ public class BankServiceTest {
     @Test
     void registerCustomer_whenCalledMultipleTimes_shouldIncreaseCustomerId() {
         //arrange
-        BankService bankService = new BankService();
 
         //act
         Customer customer = bankService.registerCustomer("Arif", "Yılmaz", "123");
@@ -48,7 +61,6 @@ public class BankServiceTest {
     @Test
     void loginCustomer_ifPasswordIsCorrect_shouldReturnCustomer() {
         //arrange
-        BankService bankService = new BankService();
         Customer customer = bankService.registerCustomer("Arif", "Yılmaz", "123");
 
         //act
@@ -64,7 +76,6 @@ public class BankServiceTest {
     @Test
     void loginCustomer_ifPasswordIsWrong_shouldReturnNull() {
         //arrange
-        BankService bankService = new BankService();
         Customer customer = bankService.registerCustomer("Arif", "Yılmaz", "123");
 
         //act
@@ -77,7 +88,6 @@ public class BankServiceTest {
     @Test
     void loginCustomer_whenUserIdDoesNotExist_shouldReturnNull() {
         //arrange
-        BankService bankService = new BankService();
         Customer customer = bankService.registerCustomer("Arif", "Yılmaz", "123");
 
         //act
@@ -90,7 +100,6 @@ public class BankServiceTest {
     @Test
     void depositToAccount_whenAmountIsPositive_shouldIncreaseBalanceAndCreateTransaction() {
         //arrange
-        BankService bankService = new BankService();
         Customer customer = bankService.registerCustomer("Arif", "Yılmaz", "123");
         BigDecimal balanceBefore = bankService.showBalance(customer.getAccId());
         BigDecimal depositAmount = BigDecimal.valueOf(1000);
@@ -115,7 +124,6 @@ public class BankServiceTest {
 
     @Test
     void depositToAccount_whenAmountIsNegative_shouldFailAndKeepBalanceSameAndShouldNotCreateTransaction() {
-        BankService bankService = new BankService();
         Customer customer = bankService.registerCustomer("Arif", "Yılmaz", "123");
         BigDecimal balanceBefore = bankService.showBalance(customer.getAccId());
 
@@ -131,7 +139,6 @@ public class BankServiceTest {
 
     @Test
     void depositToAccount_whenAmountIsZero_shouldFailAndKeepBalanceSameAndShouldNotCreateTransaction() {
-        BankService bankService = new BankService();
         Customer customer = bankService.registerCustomer("Arif", "Yılmaz", "123");
         BigDecimal balanceBefore = bankService.showBalance(customer.getAccId());
 
@@ -147,7 +154,6 @@ public class BankServiceTest {
 
     @Test
     void withdrawFromAccount_whenBalanceIsSufficient_shouldDecreaseBalanceAndCreateTransaction() {
-        BankService bankService = new BankService();
         Customer customer = bankService.registerCustomer("Arif", "Yılmaz", "123");
         BigDecimal balanceBefore = bankService.showBalance(customer.getAccId());
         BigDecimal withdrawAmount = BigDecimal.valueOf(1000);
@@ -170,7 +176,6 @@ public class BankServiceTest {
 
     @Test
     void withdrawFromAccount_whenBalanceIsInsufficient_shouldNotDecreaseBalanceAndShouldNotCreateTransaction() {
-        BankService bankService = new BankService();
         Customer customer = bankService.registerCustomer("Arif", "Yılmaz", "123");
         BigDecimal balanceBefore = bankService.showBalance(customer.getAccId());
 
@@ -186,7 +191,6 @@ public class BankServiceTest {
 
     @Test
     void withdrawFromAccount_whenAmountIsNegative_shouldFailAndShouldNotCreateTransaction() {
-        BankService bankService = new BankService();
         Customer customer = bankService.registerCustomer("Arif", "Yılmaz", "123");
         BigDecimal balanceBefore = bankService.showBalance(customer.getAccId());
 
@@ -202,7 +206,6 @@ public class BankServiceTest {
 
     @Test
     void withdrawFromAccount_whenAmountIsZero_shouldFailAndShouldNotCreateTransaction() {
-        BankService bankService = new BankService();
         Customer customer = bankService.registerCustomer("Arif", "Yılmaz", "123");
         BigDecimal balanceBefore = bankService.showBalance(customer.getAccId());
 
@@ -218,7 +221,6 @@ public class BankServiceTest {
 
     @Test
     void transferFromAccount_whenMoneySendIsSuccessful_shouldTransferBalancesAndCreateTransaction() {
-        BankService bankService = new BankService();
         Customer customer = bankService.registerCustomer("Arif", "Yılmaz", "123");
         Customer customer1 = bankService.registerCustomer("Arif", "Kara", "123");
         BigDecimal balanceBefore = bankService.showBalance(customer.getAccId());
@@ -252,7 +254,6 @@ public class BankServiceTest {
 
     @Test
     void transferFromAccount_whenReceiverAccountIsNull_shouldFailAndKeepBalancesSameAndNotCreateTransaction() {
-        BankService bankService = new BankService();
         Customer customer = bankService.registerCustomer("Arif", "Yılmaz", "123");
         BigDecimal balanceBefore = bankService.showBalance(customer.getAccId());
 
@@ -268,7 +269,6 @@ public class BankServiceTest {
 
     @Test
     void transferFromAccount_whenReceiverAccountIsSelf_shouldFailAndKeepBalanceSameAndNotCreateTransaction() {
-        BankService bankService = new BankService();
         Customer customer = bankService.registerCustomer("Arif", "Yılmaz", "123");
         BigDecimal balanceBefore = bankService.showBalance(customer.getAccId());
 
@@ -284,7 +284,6 @@ public class BankServiceTest {
 
     @Test
     void transferFromAccount_whenAmountIsNegative_shouldReturnInvalidAmountAndNotCreateTransaction() {
-        BankService bankService = new BankService();
         Customer customer = bankService.registerCustomer("Arif", "Yılmaz", "123");
         Customer customer1 = bankService.registerCustomer("Arif", "Ak", "123");
         BigDecimal balanceBefore = bankService.showBalance(customer.getAccId());
@@ -302,7 +301,6 @@ public class BankServiceTest {
 
     @Test
     void transferFromAccount_whenAmountIsZero_shouldReturnInvalidAmountAndNotCreateTransaction() {
-        BankService bankService = new BankService();
         Customer customer = bankService.registerCustomer("Arif", "Yılmaz", "123");
         Customer customer1 = bankService.registerCustomer("Arif", "Kara", "123");
         BigDecimal balanceBefore = bankService.showBalance(customer.getAccId());
@@ -321,7 +319,6 @@ public class BankServiceTest {
 
     @Test
     void transferFromAccount_whenBalanceIsInsufficient_shouldReturnInsufficientBalanceAndNotCreateTransaction() {
-        BankService bankService = new BankService();
         Customer customer = bankService.registerCustomer("Arif", "Yılmaz", "123");
         Customer customer1 = bankService.registerCustomer("Arif", "Ada", "123");
         BigDecimal balanceBefore = bankService.showBalance(customer.getAccId());
