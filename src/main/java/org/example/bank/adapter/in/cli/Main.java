@@ -1,4 +1,17 @@
-package org.example;
+package org.example.bank.adapter.in.cli;
+
+import org.example.bank.adapter.out.memory.InMemoryAccountRepository;
+import org.example.bank.adapter.out.memory.InMemoryCustomerRepository;
+import org.example.bank.adapter.out.memory.InMemoryTransactionRepository;
+import org.example.bank.application.port.out.AccountRepository;
+import org.example.bank.application.port.out.CustomerRepository;
+import org.example.bank.application.port.out.TransactionRepository;
+import org.example.bank.application.service.BankService;
+import org.example.bank.domain.model.Customer;
+import org.example.bank.domain.model.Transaction;
+import org.example.bank.domain.result.DepositResult;
+import org.example.bank.domain.result.TransferResult;
+import org.example.bank.domain.result.WithdrawResult;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -8,7 +21,17 @@ public class Main {
 
     public static void main(String[] args) {
 
-        BankService bankService = new BankService();
+        CustomerRepository customerRepository = new InMemoryCustomerRepository();
+
+        AccountRepository accountRepository = new InMemoryAccountRepository();
+
+        TransactionRepository transactionRepository = new InMemoryTransactionRepository();
+
+        BankService bankService = new BankService(
+                customerRepository,
+                accountRepository,
+                transactionRepository
+        );
 
         int choice;
 

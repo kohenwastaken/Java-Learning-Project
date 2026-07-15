@@ -1,5 +1,7 @@
-package org.example;
+package org.example.bank.domain.model;
 
+import org.example.bank.domain.result.TransferResult;
+import org.example.bank.domain.result.WithdrawResult;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
