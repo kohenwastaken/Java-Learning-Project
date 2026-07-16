@@ -118,8 +118,8 @@ public class BankServiceTest {
 
         assertEquals(Transaction.TransactionType.DEPOSIT, transaction.getType());
         assertBigDecimalEquals(depositAmount, transaction.getAmount());
-        assertEquals(customer.getAccId(), transaction.getSourceID());
-        assertNull(transaction.getTargetID());
+        assertEquals(customer.getAccId(), transaction.getSourceId());
+        assertNull(transaction.getTargetId());
     }
 
     @Test
@@ -170,8 +170,8 @@ public class BankServiceTest {
 
         assertEquals(Transaction.TransactionType.WITHDRAWAL, transaction.getType());
         assertBigDecimalEquals(withdrawAmount, transaction.getAmount());
-        assertEquals(customer.getAccId(), transaction.getSourceID());
-        assertNull(transaction.getTargetID());
+        assertEquals(customer.getAccId(), transaction.getSourceId());
+        assertNull(transaction.getTargetId());
     }
 
     @Test
@@ -241,15 +241,15 @@ public class BankServiceTest {
         assertEquals(1, transactions.size());
         assertEquals(Transaction.TransactionType.TRANSFER, transaction.getType());
         assertBigDecimalEquals(sendAmount, transaction.getAmount());
-        assertEquals(customer.getAccId(), transaction.getSourceID());
-        assertEquals(customer1.getAccId(), transaction.getTargetID());
+        assertEquals(customer.getAccId(), transaction.getSourceId());
+        assertEquals(customer1.getAccId(), transaction.getTargetId());
 
         assertEquals(1, receiverTransactions.size());
-        assertEquals(transaction.getTransactionID(), receiverTransaction.getTransactionID());
+        assertEquals(transaction.getTransactionId(), receiverTransaction.getTransactionId());
         assertEquals(Transaction.TransactionType.TRANSFER, receiverTransaction.getType());
         assertBigDecimalEquals(sendAmount, receiverTransaction.getAmount());
-        assertEquals(customer.getAccId(), receiverTransaction.getSourceID());
-        assertEquals(customer1.getAccId(), receiverTransaction.getTargetID());
+        assertEquals(customer.getAccId(), receiverTransaction.getSourceId());
+        assertEquals(customer1.getAccId(), receiverTransaction.getTargetId());
     }
 
     @Test

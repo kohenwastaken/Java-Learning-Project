@@ -48,9 +48,9 @@ public class Main {
             switch (choice){
                 case 1:
 
-                    int userID = handleRegistry(sc, bankService);
+                    int userId = handleRegistry(sc, bankService);
 
-                    IO.println("Hesap olusturuldu. ID'niz: " + userID + "\n");
+                    IO.println("Hesap olusturuldu. ID'niz: " + userId + "\n");
 
                     break;
                 case 2:
@@ -66,6 +66,8 @@ public class Main {
                 case 3:
                     IO.println("uygulama kapatiliyor..");
                     return;
+
+                default: IO.println("Gecersiz secim..");
             }
         }
     }
@@ -93,12 +95,12 @@ public class Main {
 
     static Customer login(Scanner sc, BankService bankService){
 
-        int userID = readInt(sc, "Hesap ID giriniz..");
+        int userId = readInt(sc, "Hesap ID giriniz..");
 
         IO.println("Sifre giriniz..");
         String enteredPswrd = sc.nextLine();
 
-        Customer customer = bankService.loginAccount(userID, enteredPswrd);
+        Customer customer = bankService.loginAccount(userId, enteredPswrd);
 
         if (customer == null)
         {
@@ -152,11 +154,11 @@ public class Main {
                     break;
                 case 3:
 
-                    int targetID = readInt(sc, "Para gondermek istediginiz hesabın ID sini girin..");
+                    int targetId = readInt(sc, "Para gondermek istediginiz hesabın ID sini girin..");
 
                     BigDecimal amount = readBigDecimal(sc, "Gondermek istediginiz para miktarini girin..");
 
-                    TransferResult result2 = bankService.transferFromAccount(customer.getAccId(), targetID, amount);
+                    TransferResult result2 = bankService.transferFromAccount(customer.getAccId(), targetId, amount);
 
                     switch (result2){
                         case SUCCESS -> IO.println("Basari ile transfer edildi..");
@@ -176,6 +178,8 @@ public class Main {
                 case 5:
                     IO.println("Hesaptan cikiliyor..");
                     return;
+
+                default: IO.println("Gecersiz secim..");
             }
         }
     }
@@ -190,11 +194,11 @@ public class Main {
         for (Transaction tr1 : transactionList)
         {
             IO.println("numara: " + num++ +
-                    "\n logID: " + tr1.getTransactionID() +
+                    "\n logID: " + tr1.getTransactionId() +
                     "\n islem turu: " + tr1.getType() +
                     "\n miktar: " + tr1.getAmount() +
-                    "\n gonderen ID: " + tr1.getSourceID() +
-                    "\n teslim alan ID: " + tr1.getTargetID() + "\t");
+                    "\n gonderen ID: " + tr1.getSourceId() +
+                    "\n teslim alan ID: " + tr1.getTargetId() + "\t");
         }
     }
 

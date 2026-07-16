@@ -20,8 +20,8 @@ public class InMemoryTransactionRepository implements TransactionRepository {
     public List<Transaction> findByAccountId(int accountId) {
         List<Transaction> result = new ArrayList<>();
         for (Transaction transaction : transactions) {
-            if (transaction.getSourceID() == accountId ||
-                    transaction.getTargetID() != null && transaction.getTargetID() == accountId) {
+            if (transaction.getSourceId() == accountId ||
+                    transaction.getTargetId() != null && transaction.getTargetId() == accountId) {
                 result.add(transaction);
             }
         }

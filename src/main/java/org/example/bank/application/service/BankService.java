@@ -17,6 +17,8 @@ import java.util.Optional;
 
 public class BankService {
 
+    private static final BigDecimal INITIAL_BALANCE = BigDecimal.valueOf(1000);
+
     private final CustomerRepository customerRepository;
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
@@ -39,7 +41,7 @@ public class BankService {
         Customer customer = new Customer(name, surname, password, this.userId);
         customerRepository.save(customer);
 
-        Account account = new Account(this.userId, BigDecimal.valueOf(1000));
+        Account account = new Account(this.userId, INITIAL_BALANCE);
         accountRepository.save(account);
 
         this.userId++;

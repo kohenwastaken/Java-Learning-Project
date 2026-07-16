@@ -33,7 +33,7 @@ public class Transaction {
         this.targetID = targetID;
     }
 
-    public int getTransactionID() {
+    public int getTransactionId() {
         return transactionID;
     }
 
@@ -45,11 +45,11 @@ public class Transaction {
         return amount;
     }
 
-    public int getSourceID() {
+    public int getSourceId() {
         return sourceID;
     }
 
-    public Integer getTargetID() {
+    public Integer getTargetId() {
         return targetID;
     }
 }

@@ -18,11 +18,11 @@ public class TransactionTest {
                 2
         );
 
-        assertEquals(1, transaction.getTransactionID());
+        assertEquals(1, transaction.getTransactionId());
         assertEquals(Transaction.TransactionType.TRANSFER, transaction.getType());
         assertBigDecimalEquals(BigDecimal.valueOf(1000), transaction.getAmount());
-        assertEquals(1, transaction.getSourceID());
-        assertEquals(2, transaction.getTargetID());
+        assertEquals(1, transaction.getSourceId());
+        assertEquals(2, transaction.getTargetId());
     }
 
     @Test
@@ -34,7 +34,7 @@ public class TransactionTest {
                 1,
                 null
         );
-        assertNull(transaction.getTargetID());
+        assertNull(transaction.getTargetId());
     }
 
     private void assertBigDecimalEquals(BigDecimal expected, BigDecimal actual) {
