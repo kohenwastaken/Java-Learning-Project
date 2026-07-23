@@ -5,5 +5,4 @@ public record RegisterCustomerRequest (
         String surname,
         String password
 ){
-
 }
