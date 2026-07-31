@@ -27,6 +27,8 @@ public class Customer {
         return surname;
     }
 
+    public String getPassword() {return password; }
+
     public boolean passwordMatches(String inputPassword) {
         return this.password.equals(inputPassword);
     }
