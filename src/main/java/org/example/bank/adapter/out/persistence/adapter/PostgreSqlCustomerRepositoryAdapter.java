@@ -18,6 +18,25 @@ public class PostgreSqlCustomerRepositoryAdapter implements CustomerRepository {
     }
 
     @Override
+    public Customer create(
+            String name,
+            String surname,
+            String password
+    ) {
+        CustomerJpaEntity entity = new CustomerJpaEntity(
+                null,
+                name,
+                surname,
+                password
+        );
+
+        CustomerJpaEntity savedEntity =
+                springDataRepository.save(entity);
+
+        return toDomain(savedEntity);
+    }
+
+    @Override
     public Customer save(Customer customer) {
         CustomerJpaEntity entity = toEntity(customer);
 

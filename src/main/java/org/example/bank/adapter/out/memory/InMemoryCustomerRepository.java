@@ -10,10 +10,34 @@ import java.util.Optional;
 public class InMemoryCustomerRepository implements CustomerRepository {
 
     private final Map<Integer, Customer> customers = new HashMap<>();
+    private int nextCustomerId = 1;
+
+    @Override
+    public Customer create(
+            String name,
+            String surname,
+            String password
+    ) {
+        Customer customer = new Customer(
+                name,
+                surname,
+                password,
+                nextCustomerId++
+        );
+
+        customers.put(customer.getAccId(), customer);
+
+        return customer;
+    }
 
     @Override
     public Customer save(Customer customer) {
         customers.put(customer.getAccId(), customer);
+
+        if (customer.getAccId() >= nextCustomerId) {
+            nextCustomerId = customer.getAccId() + 1;
+        }
+
         return customer;
     }
 
