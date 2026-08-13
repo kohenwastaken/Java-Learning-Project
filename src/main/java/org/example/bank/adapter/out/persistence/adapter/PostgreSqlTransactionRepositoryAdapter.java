@@ -5,6 +5,7 @@ import org.example.bank.adapter.out.persistence.repository.TransactionSpringData
 import org.example.bank.application.port.out.TransactionRepository;
 import org.example.bank.domain.model.Transaction;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class PostgreSqlTransactionRepositoryAdapter
@@ -16,6 +17,27 @@ public class PostgreSqlTransactionRepositoryAdapter
             TransactionSpringDataRepository springDataRepository
     ) {
         this.springDataRepository = springDataRepository;
+    }
+
+    @Override
+    public Transaction create(
+            Transaction.TransactionType type,
+            BigDecimal amount,
+            int sourceId,
+            Integer targetId
+    ) {
+        TransactionJpaEntity entity = new TransactionJpaEntity(
+                null,
+                type,
+                amount,
+                sourceId,
+                targetId
+        );
+
+        TransactionJpaEntity savedEntity =
+                springDataRepository.save(entity);
+
+        return toDomain(savedEntity);
     }
 
     @Override

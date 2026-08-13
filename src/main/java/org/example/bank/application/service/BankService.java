@@ -22,8 +22,6 @@ public class BankService {
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
 
-    private int transactionId = 1;
-
     public BankService(
             CustomerRepository customerRepository,
             AccountRepository accountRepository,
@@ -77,15 +75,12 @@ public class BankService {
         if (account.moneyDeposit(amount)) {
             accountRepository.save(account);
 
-            Transaction x = new Transaction(
-                    this.transactionId++,
+            transactionRepository.create(
                     Transaction.TransactionType.DEPOSIT,
                     amount,
                     account.getAccId(),
                     null
             );
-
-            transactionRepository.save(x);
 
             return DepositResult.SUCCESS;
         }
@@ -102,15 +97,12 @@ public class BankService {
         if (result == WithdrawResult.SUCCESS) {
             accountRepository.save(account);
 
-            Transaction y = new Transaction(
-                    this.transactionId++,
+            transactionRepository.create(
                     Transaction.TransactionType.WITHDRAWAL,
                     amount,
                     account.getAccId(),
                     null
             );
-
-            transactionRepository.save(y);
         }
 
         return result;
@@ -123,6 +115,7 @@ public class BankService {
     ) {
 
         Account senderAccount = findAccountById(userId);
+
         Optional<Account> receiverOptional =
                 accountRepository.findById(targetId);
 
@@ -155,15 +148,12 @@ public class BankService {
         accountRepository.save(senderAccount);
         accountRepository.save(receiverAccount);
 
-        Transaction z = new Transaction(
-                this.transactionId++,
+        transactionRepository.create(
                 Transaction.TransactionType.TRANSFER,
                 amount,
                 senderAccount.getAccId(),
                 receiverAccount.getAccId()
         );
-
-        transactionRepository.save(z);
 
         return TransferResult.SUCCESS;
     }
