@@ -1,5 +1,6 @@
 package org.example.bank.application.service;
 
+import org.springframework.transaction.annotation.Transactional;
 import org.example.bank.application.port.out.AccountRepository;
 import org.example.bank.application.port.out.CustomerRepository;
 import org.example.bank.application.port.out.TransactionRepository;
@@ -14,7 +15,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-
 public class BankService {
 
     private static final BigDecimal INITIAL_BALANCE = BigDecimal.valueOf(1000);
@@ -22,9 +22,6 @@ public class BankService {
     private final CustomerRepository customerRepository;
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
-
-    private int userId = 1;
-    private int transactionId = 1;
 
     public BankService(
             CustomerRepository customerRepository,
@@ -36,20 +33,26 @@ public class BankService {
         this.transactionRepository = transactionRepository;
     }
 
-    public Customer registerCustomer (String name, String surname, String password) {
+    @Transactional
+    public Customer registerCustomer(String name, String surname, String password) {
 
-        Customer customer = new Customer(name, surname, password, this.userId);
-        customerRepository.save(customer);
+        Customer customer = customerRepository.create(
+                name,
+                surname,
+                password
+        );
 
-        Account account = new Account(this.userId, INITIAL_BALANCE);
+        Account account = new Account(
+                customer.getAccId(),
+                INITIAL_BALANCE
+        );
+
         accountRepository.save(account);
-
-        this.userId++;
 
         return customer;
     }
 
-    public Customer loginAccount (int userId, String password) {
+    public Customer loginAccount(int userId, String password) {
         return customerRepository.findById(userId)
                 .filter(customer -> customer.passwordMatches(password))
                 .orElse(null);
@@ -67,26 +70,28 @@ public class BankService {
         return account.getBalance();
     }
 
+    @Transactional
     public DepositResult depositToAccount(int userId, BigDecimal amount) {
 
         Account account = findAccountById(userId);
+
         if (account.moneyDeposit(amount)) {
             accountRepository.save(account);
 
-            Transaction x = new Transaction(
-                    this.transactionId++,
+            transactionRepository.create(
                     Transaction.TransactionType.DEPOSIT,
                     amount,
                     account.getAccId(),
                     null
             );
-            transactionRepository.save(x);
 
             return DepositResult.SUCCESS;
         }
-        else return DepositResult.INVALID_AMOUNT;
+
+        return DepositResult.INVALID_AMOUNT;
     }
 
+    @Transactional
     public WithdrawResult withdrawFromAccount(int userId, BigDecimal amount) {
 
         Account account = findAccountById(userId);
@@ -96,50 +101,64 @@ public class BankService {
         if (result == WithdrawResult.SUCCESS) {
             accountRepository.save(account);
 
-            Transaction y = new Transaction(
-                    this.transactionId++,
+            transactionRepository.create(
                     Transaction.TransactionType.WITHDRAWAL,
                     amount,
                     account.getAccId(),
                     null
             );
-            transactionRepository.save(y);
         }
+
         return result;
     }
 
-    public TransferResult transferFromAccount(int userId, int targetId, BigDecimal amount){
+    @Transactional
+    public TransferResult transferFromAccount(
+            int userId,
+            int targetId,
+            BigDecimal amount
+    ) {
 
         Account senderAccount = findAccountById(userId);
-        Optional<Account> receiverOptional = accountRepository.findById(targetId);
 
-        if (receiverOptional.isEmpty()) return TransferResult.ACCOUNT_NOT_FOUND;
+        Optional<Account> receiverOptional =
+                accountRepository.findById(targetId);
+
+        if (receiverOptional.isEmpty()) {
+            return TransferResult.ACCOUNT_NOT_FOUND;
+        }
 
         Account receiverAccount = receiverOptional.get();
 
-        if (receiverAccount.getAccId() == senderAccount.getAccId()) return TransferResult.INVALID_SELF_ID;
+        if (receiverAccount.getAccId() == senderAccount.getAccId()) {
+            return TransferResult.INVALID_SELF_ID;
+        }
 
-        TransferResult result = senderAccount.moneySend(amount);
+        TransferResult result =
+                senderAccount.moneySend(amount);
 
-        if (result != TransferResult.SUCCESS) return result;
+        if (result != TransferResult.SUCCESS) {
+            return result;
+        }
 
-        boolean receiveResult = receiverAccount.moneyReceive(amount);
+        boolean receiveResult =
+                receiverAccount.moneyReceive(amount);
 
         if (!receiveResult) {
-            throw new IllegalStateException("Transfer basarili ama alici hesaba gitmedi: " + amount);
+            throw new IllegalStateException(
+                    "Transfer basarili ama alici hesaba gitmedi: " + amount
+            );
         }
 
         accountRepository.save(senderAccount);
         accountRepository.save(receiverAccount);
 
-        Transaction z = new Transaction(
-                this.transactionId++,
+        transactionRepository.create(
                 Transaction.TransactionType.TRANSFER,
                 amount,
                 senderAccount.getAccId(),
                 receiverAccount.getAccId()
         );
-        transactionRepository.save(z);
 
         return TransferResult.SUCCESS;
     }
@@ -147,5 +166,4 @@ public class BankService {
     public List<Transaction> getTransactionsForAccount(int userId) {
         return transactionRepository.findByAccountId(userId);
     }
-
 }

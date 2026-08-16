@@ -1,8 +1,11 @@
 package org.example.bank.configuration;
 
-import org.example.bank.adapter.out.memory.InMemoryAccountRepository;
-import org.example.bank.adapter.out.memory.InMemoryCustomerRepository;
-import org.example.bank.adapter.out.memory.InMemoryTransactionRepository;
+import org.example.bank.adapter.out.persistence.adapter.PostgreSqlAccountRepositoryAdapter;
+import org.example.bank.adapter.out.persistence.adapter.PostgreSqlCustomerRepositoryAdapter;
+import org.example.bank.adapter.out.persistence.adapter.PostgreSqlTransactionRepositoryAdapter;
+import org.example.bank.adapter.out.persistence.repository.AccountSpringDataRepository;
+import org.example.bank.adapter.out.persistence.repository.CustomerSpringDataRepository;
+import org.example.bank.adapter.out.persistence.repository.TransactionSpringDataRepository;
 import org.example.bank.application.port.out.AccountRepository;
 import org.example.bank.application.port.out.CustomerRepository;
 import org.example.bank.application.port.out.TransactionRepository;
@@ -14,18 +17,30 @@ import org.springframework.context.annotation.Configuration;
 public class BankConfiguration {
 
     @Bean
-    public CustomerRepository customerRepository() {
-        return new InMemoryCustomerRepository();
+    public CustomerRepository customerRepository(
+            CustomerSpringDataRepository springDataRepository
+    ) {
+        return new PostgreSqlCustomerRepositoryAdapter(
+                springDataRepository
+        );
     }
 
     @Bean
-    public AccountRepository accountRepository() {
-        return new InMemoryAccountRepository();
+    public AccountRepository accountRepository(
+            AccountSpringDataRepository springDataRepository
+    ) {
+        return new PostgreSqlAccountRepositoryAdapter(
+                springDataRepository
+        );
     }
 
     @Bean
-    public TransactionRepository transactionRepository() {
-        return new InMemoryTransactionRepository();
+    public TransactionRepository transactionRepository(
+            TransactionSpringDataRepository springDataRepository
+    ) {
+        return new PostgreSqlTransactionRepositoryAdapter(
+                springDataRepository
+        );
     }
 
     @Bean

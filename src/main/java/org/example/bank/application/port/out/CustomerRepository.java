@@ -6,8 +6,13 @@ import java.util.Optional;
 
 public interface CustomerRepository {
 
+    Customer create(
+            String name,
+            String surname,
+            String password
+    );
+
     Customer save(Customer customer);
 
     Optional<Customer> findById(int customerId);
-
 }
