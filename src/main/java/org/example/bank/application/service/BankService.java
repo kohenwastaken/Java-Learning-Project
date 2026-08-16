@@ -1,5 +1,6 @@
 package org.example.bank.application.service;
 
+import org.springframework.transaction.annotation.Transactional;
 import org.example.bank.application.port.out.AccountRepository;
 import org.example.bank.application.port.out.CustomerRepository;
 import org.example.bank.application.port.out.TransactionRepository;
@@ -32,6 +33,7 @@ public class BankService {
         this.transactionRepository = transactionRepository;
     }
 
+    @Transactional
     public Customer registerCustomer(String name, String surname, String password) {
 
         Customer customer = customerRepository.create(
@@ -68,6 +70,7 @@ public class BankService {
         return account.getBalance();
     }
 
+    @Transactional
     public DepositResult depositToAccount(int userId, BigDecimal amount) {
 
         Account account = findAccountById(userId);
@@ -88,6 +91,7 @@ public class BankService {
         return DepositResult.INVALID_AMOUNT;
     }
 
+    @Transactional
     public WithdrawResult withdrawFromAccount(int userId, BigDecimal amount) {
 
         Account account = findAccountById(userId);
@@ -108,6 +112,7 @@ public class BankService {
         return result;
     }
 
+    @Transactional
     public TransferResult transferFromAccount(
             int userId,
             int targetId,
